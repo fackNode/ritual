@@ -133,6 +133,12 @@ jq --arg contract_address "$CONTRACT_ADDRESS" '.containers[] |= if .id == "hello
 
 cat $CONFIG_FILE
 
+docker restart anvil-node
+docker restart hello-world
+docker restart deploy-node-1
+docker restart deploy-fluentbit-1
+docker restart deploy-redis-1
+
 }
 
 
