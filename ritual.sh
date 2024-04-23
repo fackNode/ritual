@@ -5,6 +5,8 @@ end="\e[0m\n"
 err="\e[31m"
 scss="\e[32m"
 
+
+installation() {
 if [ -z "$RPC_URL" ]; then
   echo -e "${err}\nYou have not set RPC_URL, please set the variable and try again${end}" && sleep 1
   exit 1;
@@ -100,3 +102,55 @@ cd foundry
 curl -L https://foundry.paradigm.xyz | bash
 
 bash -i -c "source ~/.bashrc && foundryup"
+}
+
+
+node_tune() {
+echo -e "${fmt}⚒️ Tune the node! ⚒️${end}" && sleep 1
+CONTRACT_DATA_FILE="/root/infernet-container-starter/projects/hello-world/contracts/broadcast/Deploy.s.sol/8453/run-latest.json"
+CONFIG_FILE="/root/infernet-container-starter/deploy/config.json"
+CONTRACT_ADDRESS=$(jq -r '.receipts[0].contractAddress' "$CONTRACT_DATA_FILE")
+
+if [ -z "$CONTRACT_ADDRESS" ]; then
+    echo -e "${err}Error occurred cannot read contractAddress from $CONTRACT_DATA_FILE${end}" && sleep 1
+    exit 1
+fi
+
+echo -e "${fmt}Your contract address: $CONTRACT_ADDRESS${end}" && sleep 1
+
+if grep -qF "$CONTRACT_ADDRESS" "$CONFIG_FILE"; then
+    echo "$CONTRACT_ADDRESS already in allowed_addresses array"
+    exit 0
+fi
+
+echo -e "${fmt}Adding snapshot_sync params to /root/infernet-container-starter/deploy/config.json${end}" && sleep 1
+
+jq '. += { "snapshot_sync": { "sleep": 5, "batch_size": 25 } }' "$CONFIG_FILE" > temp.json && mv temp.json "$CONFIG_FILE"
+
+echo -e "${fmt}Adding $CONTRACT_ADDRESS in allowed_addresses to /root/infernet-container-starter/deploy/config.json${end}" && sleep 1
+
+jq --arg contract_address "$CONTRACT_ADDRESS" '.containers[] |= if .id == "hello-world" then .allowed_addresses += [$contract_address] else . end' "$CONFIG_FILE" > temp.json && mv temp.json "$CONFIG_FILE"
+
+cat $CONFIG_FILE
+
+}
+
+
+while [[ $# -gt 0 ]]; do
+    key="$1"
+
+    case $key in
+        --install)
+            echo -e "${fmt}🏹 Your choose $key${end}" && sleep 1
+            installation
+            ;;
+        --node-tune)
+            echo -e "${fmt}⚒️ Your choose $key${end}" && sleep 1
+            node_tune
+            ;;
+        *)
+            echo "❌ Unknown option: $key"
+            ;;
+    esac
+    shift
+done
