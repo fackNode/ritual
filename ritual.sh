@@ -26,7 +26,7 @@ echo -e "${fmt}\nSetting up dependencies${end}" && sleep 1
 
 sudo apt update && sudo apt upgrade -y
 
-sudo apt -qy install curl git jq lz4 build-essential screen make python3-pip python3.10-venv
+sudo apt -qy install curl git jq lz4 build-essential screen make
 
 if ! command -v docker &> /dev/null && ! command -v docker-compose &> /dev/null; then
   sudo wget https://raw.githubusercontent.com/fackNode/requirements/main/docker.sh && chmod +x docker.sh && ./docker.sh
